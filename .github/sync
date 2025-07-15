@@ -1,0 +1,70 @@
+name: Sync Vault Content
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # Check every 5 minutes
+  repository_dispatch:
+    types: [vault-updated]
+  workflow_dispatch:
+
+jobs:
+  sync-vault:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Quartz repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Checkout vault content
+        uses: actions/checkout@v4
+        with:
+          repository: adnanvaldes/vault
+          path: vault-source  # This creates a directory called "vault-source"
+          token: ${{ secrets.VAULT_ACCESS_TOKEN }}
+
+      - name: Sync vault content
+        run: |
+          # Clear existing content
+          rm -rf content/*
+          rm -rf static/*
+          
+          # Create directories
+          mkdir -p content static
+          
+          # Copy vault structure to content (from root of your vault)
+          cp -r vault-source/_assets content/ 2>/dev/null || true
+          cp -r vault-source/_inbox content/ 2>/dev/null || true
+          cp -r vault-source/glossary content/ 2>/dev/null || true
+          cp -r vault-source/highlights content/ 2>/dev/null || true
+          cp -r vault-source/MOCs content/ 2>/dev/null || true
+          cp -r vault-source/vault content/ 2>/dev/null || true
+          cp vault-source/index.md content/ 2>/dev/null || true
+          cp vault-source/Scratch.md content/ 2>/dev/null || true
+          
+          # Copy assets to static directory for Quartz
+          if [ -d "vault-source/_assets" ]; then
+            cp -r vault-source/_assets/* static/ 2>/dev/null || true
+          fi
+          
+          # Fix asset links in markdown files
+          find content -name "*.md" -type f -exec sed -i 's|\[\[_assets/|\[\[/static/|g' {} \; 2>/dev/null || true
+          find content -name "*.md" -type f -exec sed -i 's|](_assets/|](/static/|g' {} \; 2>/dev/null || true
+
+      - name: Check for changes
+        id: verify-changed-files
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push changes
+        if: steps.verify-changed-files.outputs.changed == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Sync vault content - $(date '+%Y-%m-%d %H:%M:%S')"
+          git push
