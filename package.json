@@ -18,7 +18,7 @@
 "format": "npx prettier . --write",
 "test": "tsx --test",
 "profile": "0x -D prof ./quartz/bootstrap-cli.mjs build --concurrency=1",
-"setup-content": "rm -rf content && git clone https://github.com/adnanvaldes/vault.git content",
+"setup-content": "rm -rf content && git clone https://github.com/adnanvaldes/vault.git content && (test -f content/index.md || echo '# Welcome to My Digital Garden' > content/index.md)",
 "build": "npm run setup-content && npx quartz build",
 "build-only": "npx quartz build"
 },
