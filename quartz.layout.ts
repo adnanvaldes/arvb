@@ -8,8 +8,7 @@ export const sharedPageComponents: SharedLayout = {
   afterBody: [],
   footer: Component.Footer({
     links: {
-      GitHub: "https://github.com/jackyzha0/quartz",
-      "Discord Community": "https://discord.gg/cRFFHYye7t",
+      GitHub: "https://github.com/adnanvaldes",
     },
   }),
 }
@@ -25,6 +24,19 @@ export const defaultContentPageLayout: PageLayout = {
     Component.ContentMeta(),
     Component.TagList(),
   ],
+  afterBody: [
+    // Show recent posts below index.md content
+    Component.ConditionalRender({
+      component: Component.RecentNotes({
+        title: "Recent Posts",
+        limit: 5,
+        showTags: true,
+        showDate: true,
+      }),
+      condition: (page) => page.fileData.slug === "index",
+    }),
+  ],
+  
   left: [
     Component.PageTitle(),
     Component.MobileOnly(Component.Spacer()),
