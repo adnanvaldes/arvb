@@ -90,7 +90,6 @@ const config: QuartzConfig = {
       Plugin.ContentIndex({
         enableSiteMap: false,
         enableRSS: true,
-        rssFullHtml: true,
         rssSlug: "feed"
       }),
       Plugin.Assets(),
