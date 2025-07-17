@@ -22,7 +22,8 @@ const config: QuartzConfig = {
       ".obsidian", 
       ".git", 
       ".stfolder", 
-      "_inbox", 
+      "_inbox",
+      "templates"
       ],
     defaultDateType: "modified",
     theme: {
