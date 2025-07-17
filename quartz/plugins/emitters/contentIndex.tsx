@@ -26,7 +26,6 @@ interface Options {
   enableRSS: boolean
   rssLimit?: number
   rssFullHtml: boolean
-  rssFullContent: boolean
   rssSlug: string
   includeEmptyFiles: boolean
 }
@@ -36,7 +35,6 @@ const defaultOptions: Options = {
   enableRSS: true,
   rssLimit: 10,
   rssFullHtml: false,
-  rssFullContent: true,
   rssSlug: "index",
   includeEmptyFiles: true,
 }
@@ -112,15 +110,22 @@ export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
             links: file.data.links ?? [],
             tags: file.data.frontmatter?.tags ?? [],
             content: file.data.text ?? "",
-            richContent: opts?.rssFullContent
-              ? toHtml(tree as Root, { allowDangerousHtml: true })
-              : opts?.rssFullHtml
+            richContent: opts?.rssFullHtml
               ? escapeHTML(toHtml(tree as Root, { allowDangerousHtml: true }))
               : undefined,
             date: date,
             description: file.data.description ?? "",
           })
         }
+      }
+
+      if (opts?.enableSiteMap) {
+        yield write({
+          ctx,
+          content: generateSiteMap(cfg, linkIndex),
+          slug: "sitemap" as FullSlug,
+          ext: ".xml",
+        })
       }
 
       if (opts?.enableRSS) {
