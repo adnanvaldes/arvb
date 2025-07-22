@@ -33,6 +33,7 @@ export const defaultContentPageLayout: PageLayout = {
         limit: 5,
         showTags: true,
         showDate: true,
+        filter: (page) => page.relativePath.startsWith("vault/"),
       }),
       condition: (page) => page.fileData.slug === "index",
     }),
